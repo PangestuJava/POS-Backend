@@ -3,10 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Ramsey\Uuid\Uuid;
+use App\Models\UserDetail;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -18,9 +21,10 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'uuid',
         'email',
-        'password',
+        'username',
+        'password'
     ];
 
     /**
@@ -42,4 +46,28 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * The attribute that makes the UUID automatic.
+     *
+     * @method static
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        // Generate UUID before creating a new record
+        static::creating(function ($model) {
+            $model->uuid = Uuid::uuid4()->toString();
+        });
+    }
+
+    /**
+     * Attributes associated with user_details tables.
+     *
+     * @method
+     */
+    public function userDetail(): HasOne
+    {
+        return $this->hasOne(UserDetail::class);
+    }
 }
